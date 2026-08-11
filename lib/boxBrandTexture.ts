@@ -10,8 +10,10 @@ import * as THREE from "three";
  */
 let cache: THREE.CanvasTexture | null = null;
 
+// The standalone crest PNG is an incomplete crop (missing the shield), so we
+// take the COMPLETE crest from the logo_label sheet and crop out its wordmark.
 const CREST_SRC =
-  "/textures/velvet_ember/velvet_ember_crest_transparent_gold.png";
+  "/textures/velvet_ember/velvet_ember_logo_label_transparent_gold.png";
 
 export function getBoxBrandTexture(): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
@@ -73,19 +75,23 @@ export function getBoxBrandTexture(): THREE.CanvasTexture | null {
   tex.anisotropy = 8;
   cache = tex;
 
-  // Composite the crest above the wordmark once it loads.
+  // Composite the COMPLETE crest above the wordmark once it loads.
   const img = new Image();
   img.onload = () => {
-    // Drop the top ~8% of the source to avoid the crest sheet's edge line.
-    const sy = img.height * 0.08;
-    const sh = img.height * 0.92;
-    const maxW = w * 0.6;
-    const scale = maxW / img.width;
-    const cw = img.width * scale;
-    const ch = sh * scale;
+    // Source-crop the crest emblem out of the logo sheet (excludes the sheet's
+    // frame border and the baked "VELVET EMBER" wordmark below it).
+    const cropX = img.width * 0.1;
+    const cropY = img.height * 0.05;
+    const cropW = img.width * 0.8;
+    const cropH = img.height * 0.72;
+    const aspect = cropW / cropH;
+    const destW = w * 0.62;
+    const destH = destW / aspect;
+    const destX = (w - destW) / 2;
+    const destY = h * 0.07;
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
-    ctx.drawImage(img, 0, sy, img.width, sh, (w - cw) / 2, h * 0.09, cw, ch);
+    ctx.drawImage(img, cropX, cropY, cropW, cropH, destX, destY, destW, destH);
     tex.needsUpdate = true;
   };
   img.onerror = () => {

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PerfumeScene from "@/components/PerfumeScene";
 import ScrollOverlay from "@/components/ScrollOverlay";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import MobileHome from "@/components/MobileHome";
 
 /** Desktop cinematic experience only kicks in at/above this width. */
@@ -40,10 +41,17 @@ export default function HomeExperience() {
   // Mobile / tablet (< 1024px): stacked layout. No ScrollOverlay, no fixed
   // full-screen scroll-stage — the 3D is contained inside MobileHome.
   if (isMobile) {
-    return <MobileHome />;
+    return (
+      <>
+        <MobileHome />
+        <SiteFooter />
+      </>
+    );
   }
 
   // Desktop (>= 1024px): the fixed, scroll-driven cinematic hero (unchanged).
+  // The footer sits after the scroll-stage (z-40, solid bg) so it scrolls into
+  // view at the very bottom without disturbing the fixed 3D hero above it.
   return (
     <>
       <div className="scene-backdrop pointer-events-none fixed inset-0 z-0" />
@@ -51,6 +59,7 @@ export default function HomeExperience() {
       <SiteHeader />
       <ScrollOverlay />
       <div id="scroll-stage" className="relative h-[600vh]" aria-hidden />
+      <SiteFooter />
     </>
   );
 }
