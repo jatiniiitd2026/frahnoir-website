@@ -32,11 +32,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    // suppressHydrationWarning: browser extensions inject attributes on <html>/
+    // <body> (e.g. __gcrremoteframetoken) before React hydrates, which would
+    // otherwise trigger a root hydration mismatch. This only ignores attribute
+    // diffs on these two elements, not real content mismatches inside the app.
     <html
       lang="en"
       className={`${display.variable} ${serif.variable} ${sans.variable}`}
+      suppressHydrationWarning
     >
-      <body className="font-sans">{children}</body>
+      <body className="font-sans" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

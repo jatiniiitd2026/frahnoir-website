@@ -10,6 +10,7 @@ import {
   getLeatherBumpTexture,
   getLeatherMapTexture,
 } from "@/lib/leatherTexture";
+import { getBoxBrandTexture } from "@/lib/boxBrandTexture";
 import {
   LEATHER_BUMP_SCALE,
   LEATHER_BUMP_SCALE_TEXTURED,
@@ -98,13 +99,10 @@ function TexturedFaceMaterial({
 }
 
 /**
- * Gold foil brand decal (crest + "VELVET EMBER" wordmark) on a transparent
- * plane, floated slightly proud of the front leather face so the leather shows
- * around it (no z-fighting). Aspect is read from the image so nothing stretches.
+ * Gold foil brand decal (crest + "SWEET SIN" wordmark) generated on a canvas,
+ * on a transparent plane floated slightly proud of the front leather face.
+ * Aspect is read from the canvas so nothing stretches.
  */
-const BRAND_LOGO =
-  "/textures/velvet_ember/velvet_ember_logo_label_transparent_gold.png";
-
 function BrandDecal({
   position,
   width,
@@ -112,11 +110,10 @@ function BrandDecal({
   position: [number, number, number];
   width: number;
 }) {
-  const tex = useTexture(BRAND_LOGO);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  const img = tex.image as { width: number; height: number } | undefined;
-  const aspect = img && img.width ? img.width / img.height : 892 / 765;
+  const tex = useMemo(() => getBoxBrandTexture(), []);
+  if (!tex) return null;
+  const el = tex.image as { width: number; height: number } | undefined;
+  const aspect = el && el.width ? el.width / el.height : 900 / 765;
 
   return (
     <mesh position={position}>

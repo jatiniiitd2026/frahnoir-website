@@ -104,7 +104,7 @@ export default function ScrollOverlay() {
           Frahnoir
         </p>
         <h1 className="text-gold-sheen font-display text-[3.25rem] font-medium leading-[0.95] tracking-[0.06em] sm:text-7xl md:text-8xl">
-          Velvet Ember
+          Sweet Sin
         </h1>
         <p className="mt-5 text-xs uppercase tracking-wider2 text-velvet-cream/75 sm:text-sm">
           Extrait de Parfum · 50 ml
@@ -113,7 +113,7 @@ export default function ScrollOverlay() {
           href="/products"
           className="pointer-events-auto mt-9 rounded-full border border-velvet-gold/60 px-9 py-3 text-[0.7rem] uppercase tracking-luxe text-velvet-gold transition-colors hover:bg-velvet-gold hover:text-velvet-ink"
         >
-          Pre-order Now
+          Buy Now
         </Link>
       </section>
 
@@ -207,7 +207,7 @@ export default function ScrollOverlay() {
             href="/products"
             className="min-w-44 rounded-full bg-gold-sheen px-8 py-3 text-center text-[0.68rem] font-medium uppercase tracking-luxe text-velvet-ink transition-opacity hover:opacity-90"
           >
-            Pre-order
+            Buy Now
           </Link>
           <a
             href="https://wa.me/"

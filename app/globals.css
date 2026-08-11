@@ -9,10 +9,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Never allow horizontal scrolling (esp. on mobile). */
+/* Prevent horizontal scrolling WITHOUT creating a scroll container.
+   `overflow-x: clip` (unlike `hidden`) does not break `position: sticky`
+   on descendants — which the mobile scroll hero relies on. */
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 

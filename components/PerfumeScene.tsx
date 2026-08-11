@@ -21,12 +21,20 @@ import { computeSceneState } from "@/lib/scrollTimeline";
  * position/rotate themselves from the same timeline. Camera values are eased
  * toward their targets so quick scroll jumps still feel smooth.
  */
+// Local bounding box of the final side-by-side product composition.
+const COMP_W = 3.35; // box(-1.9..0.3) + bottle(0.45..1.45)
+const COMP_H = 3.2;
+const COMP_CX = -0.225; // horizontal centre of the composition (local units)
+const STATIC_SCALE = 0.62; // smaller product for phones
+
 function SceneAnimator({
   progressRef,
   children,
+  staticMode = false,
 }: {
   progressRef: React.MutableRefObject<number>;
   children: ReactNode;
+  staticMode?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
@@ -34,6 +42,39 @@ function SceneAnimator({
 
   useFrame((state, delta) => {
     const s = computeSceneState(progressRef.current, state.clock.elapsedTime);
+
+    // --- Static (mobile) mode: frame the WHOLE product to fit the contained
+    // hero at any aspect ratio, centred and not too large. ---
+    if (staticMode && groupRef.current) {
+      groupRef.current.scale.setScalar(
+        THREE.MathUtils.damp(groupRef.current.scale.x, STATIC_SCALE, 6, delta),
+      );
+      groupRef.current.position.y = THREE.MathUtils.damp(
+        groupRef.current.position.y,
+        0,
+        6,
+        delta,
+      );
+
+      const aspect = state.size.width / Math.max(1, state.size.height);
+      const persp = camera as THREE.PerspectiveCamera;
+      const tanHalfFov = Math.tan((persp.fov * Math.PI) / 360);
+      const worldW = COMP_W * STATIC_SCALE;
+      const worldH = COMP_H * STATIC_SCALE;
+      // z needed so the product occupies ~80% width AND ~64% height.
+      const zForWidth = worldW / 0.8 / (2 * tanHalfFov * aspect);
+      const zForHeight = worldH / 0.64 / (2 * tanHalfFov);
+      const z = THREE.MathUtils.clamp(Math.max(zForWidth, zForHeight), 6, 16);
+      const cx = COMP_CX * STATIC_SCALE;
+
+      camera.position.x = THREE.MathUtils.damp(camera.position.x, cx, 5, delta);
+      camera.position.y = THREE.MathUtils.damp(camera.position.y, 0.35, 5, delta);
+      camera.position.z = THREE.MathUtils.damp(camera.position.z, z, 5, delta);
+      lookAt.current.x = THREE.MathUtils.damp(lookAt.current.x, cx, 5, delta);
+      lookAt.current.y = THREE.MathUtils.damp(lookAt.current.y, -0.05, 5, delta);
+      camera.lookAt(lookAt.current);
+      return;
+    }
 
     if (groupRef.current) {
       const sc = THREE.MathUtils.damp(
@@ -72,14 +113,22 @@ function SceneAnimator({
  */
 export default function PerfumeScene({
   variant = "scroll",
+  progressRef: externalProgressRef,
 }: {
-  variant?: "scroll" | "static";
+  variant?: "scroll" | "static" | "mobile-scroll";
+  /** Required for "mobile-scroll": progress (0–1) driven by the mobile hero. */
+  progressRef?: React.MutableRefObject<number>;
 }) {
-  // Static mode parks progress at the final showcase (full product in frame).
-  const progressRef = useRef(variant === "static" ? 1 : 0);
+  // static parks at the final showcase (1); scroll starts at 0.
+  const internalRef = useRef(variant === "static" ? 1 : 0);
+  // mobile-scroll reads progress from the caller; others use the internal ref.
+  const progressRef =
+    variant === "mobile-scroll" && externalProgressRef
+      ? externalProgressRef
+      : internalRef;
 
   useEffect(() => {
-    if (variant !== "scroll") return; // static mode: no scroll hijacking
+    if (variant !== "scroll") return; // static / mobile-scroll: no ScrollTrigger
     gsap.registerPlugin(ScrollTrigger);
 
     const trigger = ScrollTrigger.create({
@@ -102,7 +151,8 @@ export default function PerfumeScene({
     };
   }, [variant]);
 
-  const isStatic = variant === "static";
+  // Both non-desktop variants use the contained, mobile-fit camera framing.
+  const isStatic = variant !== "scroll";
 
   return (
     <Canvas
@@ -122,10 +172,10 @@ export default function PerfumeScene({
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.15,
       }}
-      // static starts near the final pose to avoid a big intro pan.
+      // static starts near the mobile-fit pose to avoid a big intro pan.
       camera={
         isStatic
-          ? { position: [0, 1.1, 7.4], fov: 34 }
+          ? { position: [0, 0.35, 9], fov: 34 }
           : { position: [1.8, 0.1, 6], fov: 33 }
       }
     >
@@ -178,33 +228,35 @@ export default function PerfumeScene({
           />
         </Environment>
 
-        {/* Glossy black pedestal under the product (static — does not rotate) */}
-        <mesh position={[0, -1.72, 0]} receiveShadow>
-          <cylinderGeometry args={[2.4, 2.75, 0.4, 64]} />
-          <meshPhysicalMaterial
-            color="#070406"
-            roughness={0.07}
-            metalness={0.45}
-            clearcoat={1}
-            clearcoatRoughness={0.05}
-            envMapIntensity={1.3}
+        {/* Pedestal + contact shadow. Grouped so they scale WITH the product in
+            static/mobile mode (stays grounded); desktop keeps scale 1 → unchanged. */}
+        <group scale={isStatic ? STATIC_SCALE : 1}>
+          {/* Glossy black pedestal under the product (does not rotate) */}
+          <mesh position={[0, -1.72, 0]} receiveShadow>
+            <cylinderGeometry args={[2.4, 2.75, 0.4, 64]} />
+            <meshPhysicalMaterial
+              color="#070406"
+              roughness={0.07}
+              metalness={0.45}
+              clearcoat={1}
+              clearcoatRoughness={0.05}
+              envMapIntensity={1.3}
+            />
+          </mesh>
+          <ContactShadows
+            position={[0, -1.51, 0]}
+            opacity={0.7}
+            scale={10}
+            blur={2.6}
+            far={4}
+            color="#000000"
           />
-        </mesh>
+        </group>
 
-        <SceneAnimator progressRef={progressRef}>
+        <SceneAnimator progressRef={progressRef} staticMode={isStatic}>
           <PerfumeBox progressRef={progressRef} />
           <PerfumeBottle progressRef={progressRef} />
         </SceneAnimator>
-
-        {/* Contact shadow grounding the product on the pedestal */}
-        <ContactShadows
-          position={[0, -1.51, 0]}
-          opacity={0.7}
-          scale={10}
-          blur={2.6}
-          far={4}
-          color="#000000"
-        />
       </Suspense>
     </Canvas>
   );
