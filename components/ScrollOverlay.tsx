@@ -101,7 +101,7 @@ export default function ScrollOverlay() {
         className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center will-change-transform"
       >
         <p className="mb-5 text-[0.62rem] uppercase tracking-wider2 text-velvet-gold">
-          Maison Frahnoir
+          Frahnoir
         </p>
         <h1 className="text-gold-sheen font-display text-[3.25rem] font-medium leading-[0.95] tracking-[0.06em] sm:text-7xl md:text-8xl">
           Velvet Ember

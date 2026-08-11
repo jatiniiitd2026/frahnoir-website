@@ -63,10 +63,23 @@ function SceneAnimator({
   return <group ref={groupRef}>{children}</group>;
 }
 
-export default function PerfumeScene() {
-  const progressRef = useRef(0);
+/**
+ * `scroll` (default): fixed full-screen canvas driven by the #scroll-stage
+ *   ScrollTrigger — the desktop cinematic hero (unchanged).
+ * `static`: an absolutely-positioned canvas that fills its (height-controlled)
+ *   parent and holds the final showcase pose. Used inside the mobile hero so
+ *   the 3D never takes over the whole screen.
+ */
+export default function PerfumeScene({
+  variant = "scroll",
+}: {
+  variant?: "scroll" | "static";
+}) {
+  // Static mode parks progress at the final showcase (full product in frame).
+  const progressRef = useRef(variant === "static" ? 1 : 0);
 
   useEffect(() => {
+    if (variant !== "scroll") return; // static mode: no scroll hijacking
     gsap.registerPlugin(ScrollTrigger);
 
     const trigger = ScrollTrigger.create({
@@ -87,12 +100,15 @@ export default function PerfumeScene() {
       trigger.kill();
       window.removeEventListener("load", refresh);
     };
-  }, []);
+  }, [variant]);
+
+  const isStatic = variant === "static";
 
   return (
     <Canvas
-      // z-10: sits ABOVE the CSS backdrop (z-0), BELOW the overlay (z-20).
-      className="!fixed inset-0 z-10"
+      // scroll: fixed full-viewport (z-10, above backdrop/below overlay).
+      // static: fills its height-controlled parent, no fixed positioning.
+      className={isStatic ? "!absolute inset-0" : "!fixed inset-0 z-10"}
       shadows
       dpr={[1, 2]}
       gl={{
@@ -101,8 +117,12 @@ export default function PerfumeScene() {
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.15,
       }}
-      // Off-axis + low eye = cinematic 3/4 view; the rig fills the frame.
-      camera={{ position: [1.8, 0.1, 6], fov: 33 }}
+      // static starts near the final pose to avoid a big intro pan.
+      camera={
+        isStatic
+          ? { position: [0, 1.1, 7.4], fov: 34 }
+          : { position: [1.8, 0.1, 6], fov: 33 }
+      }
     >
       <Suspense fallback={null}>
         {/* Soft warm fill so shadows stay rich but never crushed */}

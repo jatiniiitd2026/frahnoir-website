@@ -9,9 +9,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The scene canvas is fixed; the body just needs to allow the tall scroll stage. */
+/* Never allow horizontal scrolling (esp. on mobile). */
+html,
 body {
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 @layer components {

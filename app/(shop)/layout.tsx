@@ -31,7 +31,7 @@ export default function ShopLayout({
           </Link>
         </div>
         <p className="mt-6 text-[0.58rem] uppercase tracking-luxe text-velvet-cream/35">
-          © {new Date().getFullYear()} Maison Frahnoir
+          © {new Date().getFullYear()} Frahnoir
         </p>
       </footer>
     </div>

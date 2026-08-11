@@ -19,7 +19,7 @@ export default async function ReviewsPage() {
     <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10 sm:py-24">
       <header className="text-center">
         <p className="text-[0.62rem] uppercase tracking-wider2 text-velvet-gold">
-          Maison Frahnoir
+          Frahnoir
         </p>
         <h1 className="mt-4 font-display text-5xl tracking-[0.04em] text-velvet-cream sm:text-6xl">
           Client Reviews

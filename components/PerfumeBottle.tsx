@@ -10,6 +10,7 @@ import {
   getLeatherBumpTexture,
   getLeatherMapTexture,
 } from "@/lib/leatherTexture";
+import { getFrahnoirTextTexture } from "@/lib/brandTextTexture";
 import { LEATHER_BUMP_SCALE } from "@/lib/debug";
 import { TEXTURE_PATHS, USE_TEXTURES } from "@/lib/textures";
 
@@ -83,6 +84,7 @@ export default function PerfumeBottle({
   const groupRef = useRef<THREE.Group>(null);
   const bump = useMemo(() => getLeatherBumpTexture(), []);
   const grain = useMemo(() => getLeatherMapTexture(), []);
+  const brand = useMemo(() => getFrahnoirTextTexture(), []);
 
   useFrame((state) => {
     const { bottlePos, bottleRotationY, bottleScale } = computeSceneState(
@@ -109,6 +111,25 @@ export default function PerfumeBottle({
         <cylinderGeometry args={[0.5, 0.5, 1.35, 64]} />
         <LeatherLabelMaterial bump={bump} grain={grain} />
       </mesh>
+
+      {/* Gold "Frahnoir" wordmark on the front of the label (transparent decal) */}
+      {brand && (
+        <mesh position={[0, -0.12, 0.512]}>
+          <planeGeometry args={[0.56, 0.186]} />
+          <meshStandardMaterial
+            map={brand}
+            transparent
+            alphaTest={0.05}
+            metalness={0.5}
+            roughness={0.35}
+            emissive={"#6b4e18"}
+            emissiveMap={brand}
+            emissiveIntensity={0.3}
+            envMapIntensity={1.4}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
 
       {/* Thin gold seam rings top & bottom of the label */}
       <mesh position={[0, 0.37, 0]} rotation={[Math.PI / 2, 0, 0]}>
