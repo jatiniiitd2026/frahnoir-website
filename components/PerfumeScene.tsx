@@ -107,8 +107,13 @@ export default function PerfumeScene({
   return (
     <Canvas
       // scroll: fixed full-viewport (z-10, above backdrop/below overlay).
-      // static: fills its height-controlled parent, no fixed positioning.
-      className={isStatic ? "!absolute inset-0" : "!fixed inset-0 z-10"}
+      // static: fills its height-controlled parent (never fixed), sits behind
+      // the mobile content and ignores pointer events so buttons stay clickable.
+      className={
+        isStatic
+          ? "!absolute inset-0 h-full w-full pointer-events-none z-0"
+          : "!fixed inset-0 z-10"
+      }
       shadows
       dpr={[1, 2]}
       gl={{

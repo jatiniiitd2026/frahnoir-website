@@ -28,9 +28,11 @@ export default function MobileHome() {
     <main className="relative w-full overflow-x-hidden bg-velvet-ink pb-20 text-velvet-cream">
       <SiteHeader />
 
-      {/* Contained 3D hero — controlled height, never full-screen */}
-      <section className="relative h-[clamp(360px,58vh,520px)] w-full overflow-hidden">
-        <div className="scene-backdrop absolute inset-0" />
+      {/* Contained 3D hero — controlled height, never full-screen.
+          `isolate` keeps the canvas z-context local so it can't sit over the
+          content sections below. */}
+      <section className="relative isolate h-[clamp(360px,52dvh,500px)] w-full overflow-hidden">
+        <div className="scene-backdrop absolute inset-0 z-0" />
         <PerfumeScene variant="static" />
       </section>
 
